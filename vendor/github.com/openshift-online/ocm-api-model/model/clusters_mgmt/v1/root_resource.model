@@ -31,6 +31,11 @@ resource Root {
 		target Clusters
 	}
 
+	// Reference to cluster registration for externally provisioned clusters.
+	locator RegisterCluster {
+		target RegisterCluster
+	}
+
 	// Reference to the service that manages the collection of flavours.
 	locator Flavours {
 		target Flavours
@@ -102,6 +107,11 @@ resource Root {
 		target PendingDeleteClusters
 	}
 
+	// Reference to the resource that manages the collection of deleted clusters.
+    locator DeletedClusters {
+        target DeletedClusters
+    }
+
 	//Reference to the resource that manages dns domains.
 	locator DNSDomains {
 	    target DNSDomains
@@ -135,5 +145,10 @@ resource Root {
 	// Reference to the resource that manages the collection of registry allowlists.
 	locator RegistryAllowlists {
 		target RegistryAllowlists
+	}
+
+	// Reference to log forwarding related resources.
+	locator LogForwarding {
+		target LogForwarding
 	}
 }
