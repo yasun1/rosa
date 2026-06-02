@@ -21,40 +21,34 @@ package v1alpha1 // github.com/openshift-online/ocm-api-model/clientapi/arohcp/v
 
 import (
 	time "time"
-
-	v1 "github.com/openshift-online/ocm-api-model/clientapi/clustersmgmt/v1"
 )
 
-// Contains the properties of the provision shard, including AWS and GCP related configurations
+// Contains the properties of the provision shard
 type ProvisionShardBuilder struct {
-	fieldSet_                []bool
-	id                       string
-	href                     string
-	awsAccountOperatorConfig *ServerConfigBuilder
-	awsBaseDomain            string
-	gcpBaseDomain            string
-	gcpProjectOperator       *ServerConfigBuilder
-	cloudProvider            *v1.CloudProviderBuilder
-	creationTimestamp        time.Time
-	hiveConfig               *ServerConfigBuilder
-	hypershiftConfig         *ServerConfigBuilder
-	lastUpdateTimestamp      time.Time
-	managementCluster        string
-	region                   *v1.CloudRegionBuilder
-	status                   string
+	fieldSet_           []bool
+	id                  string
+	href                string
+	azureShard          *AzureShardBuilder
+	cloudProvider       *CloudProviderBuilder
+	creationTimestamp   time.Time
+	lastUpdateTimestamp time.Time
+	maestroConfig       *ProvisionShardMaestroConfigBuilder
+	region              *CloudRegionBuilder
+	status              string
+	topology            string
 }
 
 // NewProvisionShard creates a new builder of 'provision_shard' objects.
 func NewProvisionShard() *ProvisionShardBuilder {
 	return &ProvisionShardBuilder{
-		fieldSet_: make([]bool, 15),
+		fieldSet_: make([]bool, 11),
 	}
 }
 
 // Link sets the flag that indicates if this is a link.
 func (b *ProvisionShardBuilder) Link(value bool) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
 	b.fieldSet_[0] = true
 	return b
@@ -63,7 +57,7 @@ func (b *ProvisionShardBuilder) Link(value bool) *ProvisionShardBuilder {
 // ID sets the identifier of the object.
 func (b *ProvisionShardBuilder) ID(value string) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
 	b.id = value
 	b.fieldSet_[1] = true
@@ -73,7 +67,7 @@ func (b *ProvisionShardBuilder) ID(value string) *ProvisionShardBuilder {
 // HREF sets the link to the object.
 func (b *ProvisionShardBuilder) HREF(value string) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
 	b.href = value
 	b.fieldSet_[2] = true
@@ -94,14 +88,14 @@ func (b *ProvisionShardBuilder) Empty() bool {
 	return true
 }
 
-// AWSAccountOperatorConfig sets the value of the 'AWS_account_operator_config' attribute to the given value.
+// AzureShard sets the value of the 'azure_shard' attribute to the given value.
 //
-// Representation of a server config
-func (b *ProvisionShardBuilder) AWSAccountOperatorConfig(value *ServerConfigBuilder) *ProvisionShardBuilder {
+// The Azure related configuration of the Provision Shard
+func (b *ProvisionShardBuilder) AzureShard(value *AzureShardBuilder) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
-	b.awsAccountOperatorConfig = value
+	b.azureShard = value
 	if value != nil {
 		b.fieldSet_[3] = true
 	} else {
@@ -110,50 +104,54 @@ func (b *ProvisionShardBuilder) AWSAccountOperatorConfig(value *ServerConfigBuil
 	return b
 }
 
-// AWSBaseDomain sets the value of the 'AWS_base_domain' attribute to the given value.
-func (b *ProvisionShardBuilder) AWSBaseDomain(value string) *ProvisionShardBuilder {
+// CloudProvider sets the value of the 'cloud_provider' attribute to the given value.
+//
+// Cloud provider.
+func (b *ProvisionShardBuilder) CloudProvider(value *CloudProviderBuilder) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
-	b.awsBaseDomain = value
-	b.fieldSet_[4] = true
+	b.cloudProvider = value
+	if value != nil {
+		b.fieldSet_[4] = true
+	} else {
+		b.fieldSet_[4] = false
+	}
 	return b
 }
 
-// GCPBaseDomain sets the value of the 'GCP_base_domain' attribute to the given value.
-func (b *ProvisionShardBuilder) GCPBaseDomain(value string) *ProvisionShardBuilder {
+// CreationTimestamp sets the value of the 'creation_timestamp' attribute to the given value.
+func (b *ProvisionShardBuilder) CreationTimestamp(value time.Time) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
-	b.gcpBaseDomain = value
+	b.creationTimestamp = value
 	b.fieldSet_[5] = true
 	return b
 }
 
-// GCPProjectOperator sets the value of the 'GCP_project_operator' attribute to the given value.
-//
-// Representation of a server config
-func (b *ProvisionShardBuilder) GCPProjectOperator(value *ServerConfigBuilder) *ProvisionShardBuilder {
+// LastUpdateTimestamp sets the value of the 'last_update_timestamp' attribute to the given value.
+func (b *ProvisionShardBuilder) LastUpdateTimestamp(value time.Time) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
-	b.gcpProjectOperator = value
-	if value != nil {
-		b.fieldSet_[6] = true
-	} else {
-		b.fieldSet_[6] = false
-	}
+	b.lastUpdateTimestamp = value
+	b.fieldSet_[6] = true
 	return b
 }
 
-// CloudProvider sets the value of the 'cloud_provider' attribute to the given value.
+// MaestroConfig sets the value of the 'maestro_config' attribute to the given value.
 //
-// Cloud provider.
-func (b *ProvisionShardBuilder) CloudProvider(value *v1.CloudProviderBuilder) *ProvisionShardBuilder {
+// The Maestro related configuration of the Provision Shard.
+// The combination of `consumer_name` and `rest_api_config.url`
+// must be unique across shards.
+// The combination of `consumer_name` and `grpc_api_config.url`
+// must be unique across shards.
+func (b *ProvisionShardBuilder) MaestroConfig(value *ProvisionShardMaestroConfigBuilder) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
-	b.cloudProvider = value
+	b.maestroConfig = value
 	if value != nil {
 		b.fieldSet_[7] = true
 	} else {
@@ -162,80 +160,18 @@ func (b *ProvisionShardBuilder) CloudProvider(value *v1.CloudProviderBuilder) *P
 	return b
 }
 
-// CreationTimestamp sets the value of the 'creation_timestamp' attribute to the given value.
-func (b *ProvisionShardBuilder) CreationTimestamp(value time.Time) *ProvisionShardBuilder {
-	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
-	}
-	b.creationTimestamp = value
-	b.fieldSet_[8] = true
-	return b
-}
-
-// HiveConfig sets the value of the 'hive_config' attribute to the given value.
-//
-// Representation of a server config
-func (b *ProvisionShardBuilder) HiveConfig(value *ServerConfigBuilder) *ProvisionShardBuilder {
-	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
-	}
-	b.hiveConfig = value
-	if value != nil {
-		b.fieldSet_[9] = true
-	} else {
-		b.fieldSet_[9] = false
-	}
-	return b
-}
-
-// HypershiftConfig sets the value of the 'hypershift_config' attribute to the given value.
-//
-// Representation of a server config
-func (b *ProvisionShardBuilder) HypershiftConfig(value *ServerConfigBuilder) *ProvisionShardBuilder {
-	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
-	}
-	b.hypershiftConfig = value
-	if value != nil {
-		b.fieldSet_[10] = true
-	} else {
-		b.fieldSet_[10] = false
-	}
-	return b
-}
-
-// LastUpdateTimestamp sets the value of the 'last_update_timestamp' attribute to the given value.
-func (b *ProvisionShardBuilder) LastUpdateTimestamp(value time.Time) *ProvisionShardBuilder {
-	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
-	}
-	b.lastUpdateTimestamp = value
-	b.fieldSet_[11] = true
-	return b
-}
-
-// ManagementCluster sets the value of the 'management_cluster' attribute to the given value.
-func (b *ProvisionShardBuilder) ManagementCluster(value string) *ProvisionShardBuilder {
-	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
-	}
-	b.managementCluster = value
-	b.fieldSet_[12] = true
-	return b
-}
-
 // Region sets the value of the 'region' attribute to the given value.
 //
 // Description of a region of a cloud provider.
-func (b *ProvisionShardBuilder) Region(value *v1.CloudRegionBuilder) *ProvisionShardBuilder {
+func (b *ProvisionShardBuilder) Region(value *CloudRegionBuilder) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
 	b.region = value
 	if value != nil {
-		b.fieldSet_[13] = true
+		b.fieldSet_[8] = true
 	} else {
-		b.fieldSet_[13] = false
+		b.fieldSet_[8] = false
 	}
 	return b
 }
@@ -243,10 +179,20 @@ func (b *ProvisionShardBuilder) Region(value *v1.CloudRegionBuilder) *ProvisionS
 // Status sets the value of the 'status' attribute to the given value.
 func (b *ProvisionShardBuilder) Status(value string) *ProvisionShardBuilder {
 	if len(b.fieldSet_) == 0 {
-		b.fieldSet_ = make([]bool, 15)
+		b.fieldSet_ = make([]bool, 11)
 	}
 	b.status = value
-	b.fieldSet_[14] = true
+	b.fieldSet_[9] = true
+	return b
+}
+
+// Topology sets the value of the 'topology' attribute to the given value.
+func (b *ProvisionShardBuilder) Topology(value string) *ProvisionShardBuilder {
+	if len(b.fieldSet_) == 0 {
+		b.fieldSet_ = make([]bool, 11)
+	}
+	b.topology = value
+	b.fieldSet_[10] = true
 	return b
 }
 
@@ -261,42 +207,30 @@ func (b *ProvisionShardBuilder) Copy(object *ProvisionShard) *ProvisionShardBuil
 	}
 	b.id = object.id
 	b.href = object.href
-	if object.awsAccountOperatorConfig != nil {
-		b.awsAccountOperatorConfig = NewServerConfig().Copy(object.awsAccountOperatorConfig)
+	if object.azureShard != nil {
+		b.azureShard = NewAzureShard().Copy(object.azureShard)
 	} else {
-		b.awsAccountOperatorConfig = nil
-	}
-	b.awsBaseDomain = object.awsBaseDomain
-	b.gcpBaseDomain = object.gcpBaseDomain
-	if object.gcpProjectOperator != nil {
-		b.gcpProjectOperator = NewServerConfig().Copy(object.gcpProjectOperator)
-	} else {
-		b.gcpProjectOperator = nil
+		b.azureShard = nil
 	}
 	if object.cloudProvider != nil {
-		b.cloudProvider = v1.NewCloudProvider().Copy(object.cloudProvider)
+		b.cloudProvider = NewCloudProvider().Copy(object.cloudProvider)
 	} else {
 		b.cloudProvider = nil
 	}
 	b.creationTimestamp = object.creationTimestamp
-	if object.hiveConfig != nil {
-		b.hiveConfig = NewServerConfig().Copy(object.hiveConfig)
-	} else {
-		b.hiveConfig = nil
-	}
-	if object.hypershiftConfig != nil {
-		b.hypershiftConfig = NewServerConfig().Copy(object.hypershiftConfig)
-	} else {
-		b.hypershiftConfig = nil
-	}
 	b.lastUpdateTimestamp = object.lastUpdateTimestamp
-	b.managementCluster = object.managementCluster
+	if object.maestroConfig != nil {
+		b.maestroConfig = NewProvisionShardMaestroConfig().Copy(object.maestroConfig)
+	} else {
+		b.maestroConfig = nil
+	}
 	if object.region != nil {
-		b.region = v1.NewCloudRegion().Copy(object.region)
+		b.region = NewCloudRegion().Copy(object.region)
 	} else {
 		b.region = nil
 	}
 	b.status = object.status
+	b.topology = object.topology
 	return b
 }
 
@@ -309,16 +243,8 @@ func (b *ProvisionShardBuilder) Build() (object *ProvisionShard, err error) {
 		object.fieldSet_ = make([]bool, len(b.fieldSet_))
 		copy(object.fieldSet_, b.fieldSet_)
 	}
-	if b.awsAccountOperatorConfig != nil {
-		object.awsAccountOperatorConfig, err = b.awsAccountOperatorConfig.Build()
-		if err != nil {
-			return
-		}
-	}
-	object.awsBaseDomain = b.awsBaseDomain
-	object.gcpBaseDomain = b.gcpBaseDomain
-	if b.gcpProjectOperator != nil {
-		object.gcpProjectOperator, err = b.gcpProjectOperator.Build()
+	if b.azureShard != nil {
+		object.azureShard, err = b.azureShard.Build()
 		if err != nil {
 			return
 		}
@@ -330,20 +256,13 @@ func (b *ProvisionShardBuilder) Build() (object *ProvisionShard, err error) {
 		}
 	}
 	object.creationTimestamp = b.creationTimestamp
-	if b.hiveConfig != nil {
-		object.hiveConfig, err = b.hiveConfig.Build()
-		if err != nil {
-			return
-		}
-	}
-	if b.hypershiftConfig != nil {
-		object.hypershiftConfig, err = b.hypershiftConfig.Build()
-		if err != nil {
-			return
-		}
-	}
 	object.lastUpdateTimestamp = b.lastUpdateTimestamp
-	object.managementCluster = b.managementCluster
+	if b.maestroConfig != nil {
+		object.maestroConfig, err = b.maestroConfig.Build()
+		if err != nil {
+			return
+		}
+	}
 	if b.region != nil {
 		object.region, err = b.region.Build()
 		if err != nil {
@@ -351,5 +270,6 @@ func (b *ProvisionShardBuilder) Build() (object *ProvisionShard, err error) {
 		}
 	}
 	object.status = b.status
+	object.topology = b.topology
 	return
 }
