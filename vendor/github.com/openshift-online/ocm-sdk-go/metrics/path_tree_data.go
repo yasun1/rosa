@@ -70,6 +70,12 @@ var pathTreeData = `{
         "notify_details": null,
         "organizations": {
           "-": {
+            "account_group_assignments": {
+              "-": null
+            },
+            "account_groups": {
+              "-": null
+            },
             "labels": {
               "-": null
             },
@@ -156,6 +162,9 @@ var pathTreeData = `{
         "clusters": {
           "-": {
             "autoscaler": null,
+            "control_plane_upgrade_policies": {
+              "-": null
+            },
             "external_auth_config": {
               "external_auths": {
                 "-": null
@@ -166,13 +175,20 @@ var pathTreeData = `{
             },
             "node_pools": {
               "-": {
-                "status": null
+                "status": null,
+                "upgrade_policies": {
+                  "-": null
+                }
               }
             },
+            "provision_shard": null,
             "status": null
           }
         },
         "managed_identities_requirements": null,
+        "provision_shards": {
+          "-": null
+        },
         "versions": {
           "-": null
         }
@@ -252,6 +268,9 @@ var pathTreeData = `{
             },
             "clusterdeployment": null,
             "control_plane": {
+              "log_forwarders": {
+                "-": null
+              },
               "upgrade_policies": {
                 "-": null
               }
@@ -355,6 +374,9 @@ var pathTreeData = `{
             "vpc": null
           }
         },
+        "deleted_clusters": {
+          "-": null
+        },
         "dns_domains": {
           "-": null
         },
@@ -381,6 +403,10 @@ var pathTreeData = `{
           "-": null
         },
         "load_balancer_quota_values": null,
+        "log_forwarding": {
+          "applications": null,
+          "groups": null
+        },
         "machine_types": {
           "-": null
         },
@@ -406,6 +432,7 @@ var pathTreeData = `{
         "provision_shards": {
           "-": null
         },
+        "register_cluster": null,
         "registry_allowlists": {
           "-": null
         },

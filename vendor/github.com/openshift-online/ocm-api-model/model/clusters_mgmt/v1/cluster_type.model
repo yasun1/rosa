@@ -81,6 +81,10 @@ class Cluster {
 	// Information about the API of the cluster.
 	API ClusterAPI
 
+	// Control plane configuration for the cluster.
+	// This can be set during cluster creation to configure the control plane.
+	link ControlPlane ControlPlane
+
 	// Link to the cloud provider region where the cluster is installed.
 	link Region CloudRegion
 
@@ -159,6 +163,10 @@ class Cluster {
 	// Link to the version of _OpenShift_ that will be used to install the cluster.
 	link Version Version
 
+	// Channel is the Y-stream update channel for the cluster (e.g., "stable-4.16", "eus-4.16").
+	// This field allows specifying the update channel independently from the version.
+	Channel String
+
 	// Link to the collection of identity providers of the cluster.
 	link IdentityProviders []IdentityProvider
 
@@ -213,6 +221,8 @@ class Cluster {
 
 	// Indicates whether that etcd is encrypted or not.
 	// This is set only during cluster creation.
+	// For ROSA-HCP Clusters, etcd is always encrypted, if not set/false, or kms user's key not set, 
+	// defaults true indicates 'encrypted by internal key'.
 	// For ARO-HCP Clusters, this is a readonly attribute, always set to true.
 	EtcdEncryption Boolean
 
@@ -221,6 +231,7 @@ class Cluster {
 
 	// Indicates whether the User workload monitoring is enabled or not
 	// It is enabled by default
+	// This field is deprecated for ROSA Hosted Control Plane clusters and will be removed
 	DisableUserWorkloadMonitoring Boolean
 
     // Contains information about Managed Service
