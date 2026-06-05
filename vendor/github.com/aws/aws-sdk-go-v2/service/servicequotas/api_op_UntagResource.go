@@ -6,6 +6,8 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/service/servicequotas/schemas"
+	smithy "github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
@@ -31,9 +33,10 @@ type UntagResourceInput struct {
 
 	// The Amazon Resource Name (ARN) for the applied quota that you want to untag.
 	// You can get this information by using the Service Quotas console, or by listing
-	// the quotas using the list-service-quotas (https://docs.aws.amazon.com/cli/latest/reference/service-quotas/list-service-quotas.html)
-	// CLI command or the ListServiceQuotas (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_ListServiceQuotas.html)
-	// Amazon Web Services API operation.
+	// the quotas using the [list-service-quotas]CLI command or the [ListServiceQuotas] Amazon Web Services API operation.
+	//
+	// [list-service-quotas]: https://docs.aws.amazon.com/cli/latest/reference/service-quotas/list-service-quotas.html
+	// [ListServiceQuotas]: https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_ListServiceQuotas.html
 	//
 	// This member is required.
 	ResourceARN *string
@@ -46,6 +49,19 @@ type UntagResourceInput struct {
 	noSmithyDocumentSerde
 }
 
+func (v *UntagResourceInput) Serialize(s smithy.ShapeSerializer) {
+	s.WriteStruct(schemas.UntagResourceRequest)
+	v.SerializeMembers(s)
+	s.CloseStruct()
+}
+
+func (v *UntagResourceInput) SerializeMembers(s smithy.ShapeSerializer) {
+	if v.ResourceARN != nil {
+		s.WriteString(schemas.UntagResourceRequest_ResourceARN, *v.ResourceARN)
+	}
+	serializeInputTagKeys(s, schemas.UntagResourceRequest_TagKeys, v.TagKeys)
+}
+
 type UntagResourceOutput struct {
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
@@ -53,16 +69,21 @@ type UntagResourceOutput struct {
 	noSmithyDocumentSerde
 }
 
+func (v *UntagResourceOutput) Deserialize(d smithy.ShapeDeserializer) error {
+	return smithy.ReadStruct(d, schemas.UntagResourceResponse, func(s *smithy.Schema) error {
+		switch s {
+		}
+		return nil
+	})
+}
 func (c *Client) addOperationUntagResourceMiddlewares(stack *middleware.Stack, options Options) (err error) {
 	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Serialize.Add(&awsAwsjson11_serializeOpUntagResource{}, middleware.After)
-	if err != nil {
+	if err := stack.Serialize.Add(&serializeRequestMiddleware{options: &options, operationSchema: smithy.NewOperationSchema(schemas.UntagResource, schemas.UntagResourceRequest, schemas.UntagResourceResponse)}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Deserialize.Add(&awsAwsjson11_deserializeOpUntagResource{}, middleware.After)
-	if err != nil {
+	if err := stack.Deserialize.Add(&deserializeResponseMiddleware{options: &options, operationSchema: smithy.NewOperationSchema(schemas.UntagResource, schemas.UntagResourceRequest, schemas.UntagResourceResponse), output: &UntagResourceOutput{}}, middleware.After); err != nil {
 		return err
 	}
 	if err := addProtocolFinalizerMiddlewares(stack, options, "UntagResource"); err != nil {
@@ -87,13 +108,16 @@ func (c *Client) addOperationUntagResourceMiddlewares(stack *middleware.Stack, o
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
+	if err = addRetry(stack, options, c); err != nil {
 		return err
 	}
 	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
 	if err = addRecordResponseTiming(stack); err != nil {
+		return err
+	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
 		return err
 	}
 	if err = addClientUserAgent(stack, options); err != nil {
@@ -106,6 +130,12 @@ func (c *Client) addOperationUntagResourceMiddlewares(stack *middleware.Stack, o
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpUntagResourceValidationMiddleware(stack); err != nil {
@@ -127,6 +157,15 @@ func (c *Client) addOperationUntagResourceMiddlewares(stack *middleware.Stack, o
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil
