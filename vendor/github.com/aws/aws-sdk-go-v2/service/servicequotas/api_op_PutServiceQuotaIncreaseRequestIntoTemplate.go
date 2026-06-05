@@ -6,7 +6,9 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/service/servicequotas/schemas"
 	"github.com/aws/aws-sdk-go-v2/service/servicequotas/types"
+	smithy "github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
@@ -40,19 +42,40 @@ type PutServiceQuotaIncreaseRequestIntoTemplateInput struct {
 	DesiredValue *float64
 
 	// Specifies the quota identifier. To find the quota code for a specific quota,
-	// use the ListServiceQuotas operation, and look for the QuotaCode response in the
-	// output for the quota you want.
+	// use the ListServiceQuotasoperation, and look for the QuotaCode response in the output for the
+	// quota you want.
 	//
 	// This member is required.
 	QuotaCode *string
 
 	// Specifies the service identifier. To find the service code value for an Amazon
-	// Web Services service, use the ListServices operation.
+	// Web Services service, use the ListServicesoperation.
 	//
 	// This member is required.
 	ServiceCode *string
 
 	noSmithyDocumentSerde
+}
+
+func (v *PutServiceQuotaIncreaseRequestIntoTemplateInput) Serialize(s smithy.ShapeSerializer) {
+	s.WriteStruct(schemas.PutServiceQuotaIncreaseRequestIntoTemplateRequest)
+	v.SerializeMembers(s)
+	s.CloseStruct()
+}
+
+func (v *PutServiceQuotaIncreaseRequestIntoTemplateInput) SerializeMembers(s smithy.ShapeSerializer) {
+	if v.AwsRegion != nil {
+		s.WriteString(schemas.PutServiceQuotaIncreaseRequestIntoTemplateRequest_AwsRegion, *v.AwsRegion)
+	}
+	if v.DesiredValue != nil {
+		s.WriteFloat64(schemas.PutServiceQuotaIncreaseRequestIntoTemplateRequest_DesiredValue, *v.DesiredValue)
+	}
+	if v.QuotaCode != nil {
+		s.WriteString(schemas.PutServiceQuotaIncreaseRequestIntoTemplateRequest_QuotaCode, *v.QuotaCode)
+	}
+	if v.ServiceCode != nil {
+		s.WriteString(schemas.PutServiceQuotaIncreaseRequestIntoTemplateRequest_ServiceCode, *v.ServiceCode)
+	}
 }
 
 type PutServiceQuotaIncreaseRequestIntoTemplateOutput struct {
@@ -66,16 +89,24 @@ type PutServiceQuotaIncreaseRequestIntoTemplateOutput struct {
 	noSmithyDocumentSerde
 }
 
+func (v *PutServiceQuotaIncreaseRequestIntoTemplateOutput) Deserialize(d smithy.ShapeDeserializer) error {
+	return smithy.ReadStruct(d, schemas.PutServiceQuotaIncreaseRequestIntoTemplateResponse, func(s *smithy.Schema) error {
+		switch s {
+		case schemas.PutServiceQuotaIncreaseRequestIntoTemplateResponse_ServiceQuotaIncreaseRequestInTemplate:
+			v.ServiceQuotaIncreaseRequestInTemplate = &types.ServiceQuotaIncreaseRequestInTemplate{}
+			return v.ServiceQuotaIncreaseRequestInTemplate.Deserialize(d)
+		}
+		return nil
+	})
+}
 func (c *Client) addOperationPutServiceQuotaIncreaseRequestIntoTemplateMiddlewares(stack *middleware.Stack, options Options) (err error) {
 	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Serialize.Add(&awsAwsjson11_serializeOpPutServiceQuotaIncreaseRequestIntoTemplate{}, middleware.After)
-	if err != nil {
+	if err := stack.Serialize.Add(&serializeRequestMiddleware{options: &options, operationSchema: smithy.NewOperationSchema(schemas.PutServiceQuotaIncreaseRequestIntoTemplate, schemas.PutServiceQuotaIncreaseRequestIntoTemplateRequest, schemas.PutServiceQuotaIncreaseRequestIntoTemplateResponse)}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Deserialize.Add(&awsAwsjson11_deserializeOpPutServiceQuotaIncreaseRequestIntoTemplate{}, middleware.After)
-	if err != nil {
+	if err := stack.Deserialize.Add(&deserializeResponseMiddleware{options: &options, operationSchema: smithy.NewOperationSchema(schemas.PutServiceQuotaIncreaseRequestIntoTemplate, schemas.PutServiceQuotaIncreaseRequestIntoTemplateRequest, schemas.PutServiceQuotaIncreaseRequestIntoTemplateResponse), output: &PutServiceQuotaIncreaseRequestIntoTemplateOutput{}}, middleware.After); err != nil {
 		return err
 	}
 	if err := addProtocolFinalizerMiddlewares(stack, options, "PutServiceQuotaIncreaseRequestIntoTemplate"); err != nil {
@@ -100,13 +131,16 @@ func (c *Client) addOperationPutServiceQuotaIncreaseRequestIntoTemplateMiddlewar
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
+	if err = addRetry(stack, options, c); err != nil {
 		return err
 	}
 	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
 	if err = addRecordResponseTiming(stack); err != nil {
+		return err
+	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
 		return err
 	}
 	if err = addClientUserAgent(stack, options); err != nil {
@@ -119,6 +153,12 @@ func (c *Client) addOperationPutServiceQuotaIncreaseRequestIntoTemplateMiddlewar
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutServiceQuotaIncreaseRequestIntoTemplateValidationMiddleware(stack); err != nil {
@@ -140,6 +180,15 @@ func (c *Client) addOperationPutServiceQuotaIncreaseRequestIntoTemplateMiddlewar
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil
