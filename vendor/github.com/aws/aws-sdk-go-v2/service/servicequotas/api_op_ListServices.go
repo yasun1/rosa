@@ -6,13 +6,15 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/service/servicequotas/schemas"
 	"github.com/aws/aws-sdk-go-v2/service/servicequotas/types"
+	smithy "github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Lists the names and codes for the Amazon Web Services integrated with Service
-// Quotas.
+// Lists the names and codes for the Amazon Web Services services integrated with
+// Service Quotas.
 func (c *Client) ListServices(ctx context.Context, params *ListServicesInput, optFns ...func(*Options)) (*ListServicesOutput, error) {
 	if params == nil {
 		params = &ListServicesInput{}
@@ -35,10 +37,11 @@ type ListServicesInput struct {
 	// appropriate to the operation. If additional items exist beyond those included in
 	// the current response, the NextToken response element is present and has a value
 	// (is not null). Include that value as the NextToken request parameter in the
-	// next call to the operation to get the next part of the results. An API operation
-	// can return fewer results than the maximum even when there are more results
-	// available. You should check NextToken after every operation to ensure that you
-	// receive all of the results.
+	// next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there are
+	// more results available. You should check NextToken after every operation to
+	// ensure that you receive all of the results.
 	MaxResults *int32
 
 	// Specifies a value for receiving additional results after you receive a NextToken
@@ -50,6 +53,21 @@ type ListServicesInput struct {
 	noSmithyDocumentSerde
 }
 
+func (v *ListServicesInput) Serialize(s smithy.ShapeSerializer) {
+	s.WriteStruct(schemas.ListServicesRequest)
+	v.SerializeMembers(s)
+	s.CloseStruct()
+}
+
+func (v *ListServicesInput) SerializeMembers(s smithy.ShapeSerializer) {
+	if v.MaxResults != nil {
+		s.WriteInt32(schemas.ListServicesRequest_MaxResults, *v.MaxResults)
+	}
+	if v.NextToken != nil {
+		s.WriteString(schemas.ListServicesRequest_NextToken, *v.NextToken)
+	}
+}
+
 type ListServicesOutput struct {
 
 	// If present, indicates that more output is available than is included in the
@@ -58,7 +76,7 @@ type ListServicesOutput struct {
 	// repeat this until the NextToken response element comes back as null .
 	NextToken *string
 
-	// The list of the Amazon Web Service names and service codes.
+	// The list of the Amazon Web Services service names and service codes.
 	Services []types.ServiceInfo
 
 	// Metadata pertaining to the operation's result.
@@ -67,16 +85,26 @@ type ListServicesOutput struct {
 	noSmithyDocumentSerde
 }
 
+func (v *ListServicesOutput) Deserialize(d smithy.ShapeDeserializer) error {
+	return smithy.ReadStruct(d, schemas.ListServicesResponse, func(s *smithy.Schema) error {
+		switch s {
+		case schemas.ListServicesResponse_NextToken:
+			v.NextToken = new(string)
+			return d.ReadString(schemas.ListServicesResponse_NextToken, v.NextToken)
+		case schemas.ListServicesResponse_Services:
+			return deserializeServiceInfoListDefinition(d, schemas.ListServicesResponse_Services, &v.Services)
+		}
+		return nil
+	})
+}
 func (c *Client) addOperationListServicesMiddlewares(stack *middleware.Stack, options Options) (err error) {
 	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Serialize.Add(&awsAwsjson11_serializeOpListServices{}, middleware.After)
-	if err != nil {
+	if err := stack.Serialize.Add(&serializeRequestMiddleware{options: &options, operationSchema: smithy.NewOperationSchema(schemas.ListServices, schemas.ListServicesRequest, schemas.ListServicesResponse)}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Deserialize.Add(&awsAwsjson11_deserializeOpListServices{}, middleware.After)
-	if err != nil {
+	if err := stack.Deserialize.Add(&deserializeResponseMiddleware{options: &options, operationSchema: smithy.NewOperationSchema(schemas.ListServices, schemas.ListServicesRequest, schemas.ListServicesResponse), output: &ListServicesOutput{}}, middleware.After); err != nil {
 		return err
 	}
 	if err := addProtocolFinalizerMiddlewares(stack, options, "ListServices"); err != nil {
@@ -101,13 +129,16 @@ func (c *Client) addOperationListServicesMiddlewares(stack *middleware.Stack, op
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
+	if err = addRetry(stack, options, c); err != nil {
 		return err
 	}
 	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
 	if err = addRecordResponseTiming(stack); err != nil {
+		return err
+	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
 		return err
 	}
 	if err = addClientUserAgent(stack, options); err != nil {
@@ -120,6 +151,12 @@ func (c *Client) addOperationListServicesMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListServices(options.Region), middleware.Before); err != nil {
@@ -140,15 +177,17 @@ func (c *Client) addOperationListServicesMiddlewares(stack *middleware.Stack, op
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// ListServicesAPIClient is a client that implements the ListServices operation.
-type ListServicesAPIClient interface {
-	ListServices(context.Context, *ListServicesInput, ...func(*Options)) (*ListServicesOutput, error)
-}
-
-var _ ListServicesAPIClient = (*Client)(nil)
 
 // ListServicesPaginatorOptions is the paginator options for ListServices
 type ListServicesPaginatorOptions struct {
@@ -157,10 +196,11 @@ type ListServicesPaginatorOptions struct {
 	// appropriate to the operation. If additional items exist beyond those included in
 	// the current response, the NextToken response element is present and has a value
 	// (is not null). Include that value as the NextToken request parameter in the
-	// next call to the operation to get the next part of the results. An API operation
-	// can return fewer results than the maximum even when there are more results
-	// available. You should check NextToken after every operation to ensure that you
-	// receive all of the results.
+	// next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there are
+	// more results available. You should check NextToken after every operation to
+	// ensure that you receive all of the results.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token
@@ -221,6 +261,9 @@ func (p *ListServicesPaginator) NextPage(ctx context.Context, optFns ...func(*Op
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListServices(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -239,6 +282,13 @@ func (p *ListServicesPaginator) NextPage(ctx context.Context, optFns ...func(*Op
 
 	return result, nil
 }
+
+// ListServicesAPIClient is a client that implements the ListServices operation.
+type ListServicesAPIClient interface {
+	ListServices(context.Context, *ListServicesInput, ...func(*Options)) (*ListServicesOutput, error)
+}
+
+var _ ListServicesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListServices(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

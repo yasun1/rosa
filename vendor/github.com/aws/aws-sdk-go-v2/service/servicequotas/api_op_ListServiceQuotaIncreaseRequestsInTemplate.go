@@ -6,7 +6,9 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/service/servicequotas/schemas"
 	"github.com/aws/aws-sdk-go-v2/service/servicequotas/types"
+	smithy "github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
@@ -37,10 +39,11 @@ type ListServiceQuotaIncreaseRequestsInTemplateInput struct {
 	// appropriate to the operation. If additional items exist beyond those included in
 	// the current response, the NextToken response element is present and has a value
 	// (is not null). Include that value as the NextToken request parameter in the
-	// next call to the operation to get the next part of the results. An API operation
-	// can return fewer results than the maximum even when there are more results
-	// available. You should check NextToken after every operation to ensure that you
-	// receive all of the results.
+	// next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there are
+	// more results available. You should check NextToken after every operation to
+	// ensure that you receive all of the results.
 	MaxResults *int32
 
 	// Specifies a value for receiving additional results after you receive a NextToken
@@ -50,10 +53,31 @@ type ListServiceQuotaIncreaseRequestsInTemplateInput struct {
 	NextToken *string
 
 	// Specifies the service identifier. To find the service code value for an Amazon
-	// Web Services service, use the ListServices operation.
+	// Web Services service, use the ListServicesoperation.
 	ServiceCode *string
 
 	noSmithyDocumentSerde
+}
+
+func (v *ListServiceQuotaIncreaseRequestsInTemplateInput) Serialize(s smithy.ShapeSerializer) {
+	s.WriteStruct(schemas.ListServiceQuotaIncreaseRequestsInTemplateRequest)
+	v.SerializeMembers(s)
+	s.CloseStruct()
+}
+
+func (v *ListServiceQuotaIncreaseRequestsInTemplateInput) SerializeMembers(s smithy.ShapeSerializer) {
+	if v.AwsRegion != nil {
+		s.WriteString(schemas.ListServiceQuotaIncreaseRequestsInTemplateRequest_AwsRegion, *v.AwsRegion)
+	}
+	if v.MaxResults != nil {
+		s.WriteInt32(schemas.ListServiceQuotaIncreaseRequestsInTemplateRequest_MaxResults, *v.MaxResults)
+	}
+	if v.NextToken != nil {
+		s.WriteString(schemas.ListServiceQuotaIncreaseRequestsInTemplateRequest_NextToken, *v.NextToken)
+	}
+	if v.ServiceCode != nil {
+		s.WriteString(schemas.ListServiceQuotaIncreaseRequestsInTemplateRequest_ServiceCode, *v.ServiceCode)
+	}
 }
 
 type ListServiceQuotaIncreaseRequestsInTemplateOutput struct {
@@ -73,16 +97,26 @@ type ListServiceQuotaIncreaseRequestsInTemplateOutput struct {
 	noSmithyDocumentSerde
 }
 
+func (v *ListServiceQuotaIncreaseRequestsInTemplateOutput) Deserialize(d smithy.ShapeDeserializer) error {
+	return smithy.ReadStruct(d, schemas.ListServiceQuotaIncreaseRequestsInTemplateResponse, func(s *smithy.Schema) error {
+		switch s {
+		case schemas.ListServiceQuotaIncreaseRequestsInTemplateResponse_NextToken:
+			v.NextToken = new(string)
+			return d.ReadString(schemas.ListServiceQuotaIncreaseRequestsInTemplateResponse_NextToken, v.NextToken)
+		case schemas.ListServiceQuotaIncreaseRequestsInTemplateResponse_ServiceQuotaIncreaseRequestInTemplateList:
+			return deserializeServiceQuotaIncreaseRequestInTemplateList(d, schemas.ListServiceQuotaIncreaseRequestsInTemplateResponse_ServiceQuotaIncreaseRequestInTemplateList, &v.ServiceQuotaIncreaseRequestInTemplateList)
+		}
+		return nil
+	})
+}
 func (c *Client) addOperationListServiceQuotaIncreaseRequestsInTemplateMiddlewares(stack *middleware.Stack, options Options) (err error) {
 	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Serialize.Add(&awsAwsjson11_serializeOpListServiceQuotaIncreaseRequestsInTemplate{}, middleware.After)
-	if err != nil {
+	if err := stack.Serialize.Add(&serializeRequestMiddleware{options: &options, operationSchema: smithy.NewOperationSchema(schemas.ListServiceQuotaIncreaseRequestsInTemplate, schemas.ListServiceQuotaIncreaseRequestsInTemplateRequest, schemas.ListServiceQuotaIncreaseRequestsInTemplateResponse)}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Deserialize.Add(&awsAwsjson11_deserializeOpListServiceQuotaIncreaseRequestsInTemplate{}, middleware.After)
-	if err != nil {
+	if err := stack.Deserialize.Add(&deserializeResponseMiddleware{options: &options, operationSchema: smithy.NewOperationSchema(schemas.ListServiceQuotaIncreaseRequestsInTemplate, schemas.ListServiceQuotaIncreaseRequestsInTemplateRequest, schemas.ListServiceQuotaIncreaseRequestsInTemplateResponse), output: &ListServiceQuotaIncreaseRequestsInTemplateOutput{}}, middleware.After); err != nil {
 		return err
 	}
 	if err := addProtocolFinalizerMiddlewares(stack, options, "ListServiceQuotaIncreaseRequestsInTemplate"); err != nil {
@@ -107,13 +141,16 @@ func (c *Client) addOperationListServiceQuotaIncreaseRequestsInTemplateMiddlewar
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
+	if err = addRetry(stack, options, c); err != nil {
 		return err
 	}
 	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
 	if err = addRecordResponseTiming(stack); err != nil {
+		return err
+	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
 		return err
 	}
 	if err = addClientUserAgent(stack, options); err != nil {
@@ -126,6 +163,12 @@ func (c *Client) addOperationListServiceQuotaIncreaseRequestsInTemplateMiddlewar
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListServiceQuotaIncreaseRequestsInTemplate(options.Region), middleware.Before); err != nil {
@@ -146,16 +189,17 @@ func (c *Client) addOperationListServiceQuotaIncreaseRequestsInTemplateMiddlewar
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
+		return err
+	}
 	return nil
 }
-
-// ListServiceQuotaIncreaseRequestsInTemplateAPIClient is a client that implements
-// the ListServiceQuotaIncreaseRequestsInTemplate operation.
-type ListServiceQuotaIncreaseRequestsInTemplateAPIClient interface {
-	ListServiceQuotaIncreaseRequestsInTemplate(context.Context, *ListServiceQuotaIncreaseRequestsInTemplateInput, ...func(*Options)) (*ListServiceQuotaIncreaseRequestsInTemplateOutput, error)
-}
-
-var _ ListServiceQuotaIncreaseRequestsInTemplateAPIClient = (*Client)(nil)
 
 // ListServiceQuotaIncreaseRequestsInTemplatePaginatorOptions is the paginator
 // options for ListServiceQuotaIncreaseRequestsInTemplate
@@ -165,10 +209,11 @@ type ListServiceQuotaIncreaseRequestsInTemplatePaginatorOptions struct {
 	// appropriate to the operation. If additional items exist beyond those included in
 	// the current response, the NextToken response element is present and has a value
 	// (is not null). Include that value as the NextToken request parameter in the
-	// next call to the operation to get the next part of the results. An API operation
-	// can return fewer results than the maximum even when there are more results
-	// available. You should check NextToken after every operation to ensure that you
-	// receive all of the results.
+	// next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there are
+	// more results available. You should check NextToken after every operation to
+	// ensure that you receive all of the results.
 	Limit int32
 
 	// Set to true if pagination should stop if the service returns a pagination token
@@ -231,6 +276,9 @@ func (p *ListServiceQuotaIncreaseRequestsInTemplatePaginator) NextPage(ctx conte
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListServiceQuotaIncreaseRequestsInTemplate(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -249,6 +297,14 @@ func (p *ListServiceQuotaIncreaseRequestsInTemplatePaginator) NextPage(ctx conte
 
 	return result, nil
 }
+
+// ListServiceQuotaIncreaseRequestsInTemplateAPIClient is a client that implements
+// the ListServiceQuotaIncreaseRequestsInTemplate operation.
+type ListServiceQuotaIncreaseRequestsInTemplateAPIClient interface {
+	ListServiceQuotaIncreaseRequestsInTemplate(context.Context, *ListServiceQuotaIncreaseRequestsInTemplateInput, ...func(*Options)) (*ListServiceQuotaIncreaseRequestsInTemplateOutput, error)
+}
+
+var _ ListServiceQuotaIncreaseRequestsInTemplateAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListServiceQuotaIncreaseRequestsInTemplate(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
